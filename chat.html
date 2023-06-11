@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>LEf-Chat</title>
+    <style>
+	
+		h1 {
+			font-size: 32px;
+			font-weight: bold;
+			color: #333333;
+			 padding: 10px;
+			text-align: center;
+			text-transform: uppercase;
+			margin-top: 20px;
+			margin-bottom: 40px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+			border-radius: 10px;
+		}
+		
+		body {
+			background-color: #f2f2f2;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			height: 90vh;
+			margin: 0;
+			padding: 20px;
+			box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+		}
+
+		#messages-container {
+			background-color: #ffffff;
+			border-radius: 20px;
+			padding: 20px;
+			max-height: 100vh;
+			overflow-y: auto;
+			width: 50%;
+			max-width: 800px;
+		}
+
+		.message {
+			padding: 10px;
+			margin-bottom: 10px;
+			background-color: #f9f9f9;
+			border-radius: 10px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		
+		.delete-text {
+			left: 10px;
+			right: 10px;
+			transform: translateY(-50%);
+			color: #FF0000;
+			cursor: pointer;
+		}
+
+		.input-container {
+			margin-top: 20px;
+		}
+		
+		#message-input {
+			border: none;
+			padding: 10px;
+			border-radius: 20px;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+		
+		#send-button {
+			background-color: #0084ff;
+			color: #fff;
+			border: none;
+			border-radius: 20px;
+			padding: 10px 20px;
+			cursor: pointer;
+			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		}
+    }
+	</style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+</head>
+<body>
+    <h1>LEF Chat</h1>
+
+    <div id="messages-container">
+		<!-- Messages here -->
+		<div class="message">
+			<span class="message-content">No Messages</span>
+			<span class="delete-text">Delete</span>
+		</div>
+	</div>
+
+    <div class="input-container">
+        <input type="text" id="message-input" placeholder="Type your message...">
+        <button id="send-button">Send</button>
+    </div>
+
+    <script>
+        function getMessages() {
+            $.ajax({
+                url: 'chat.php',
+                type: 'GET',
+                success: function(response) {
+                    $('#messages-container').html(response);
+					scrollMessagesContainerToBottom();
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function saveMessage(message) {
+            $.ajax({
+                url: 'chat.php',
+                type: 'POST',
+                data: { message: message },
+                success: function(response) {
+                    getMessages();
+                    $('#message-input').val('');
+					scrollMessagesContainerToBottom();
+                },
+                error: function(xhr, status, error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            $('#send-button').click(function() {
+                var messageInput = $('#message-input');
+                var message = messageInput.val().trim();
+                if (message !== '') {
+                    saveMessage(message);
+                }
+            });
+
+            setInterval(getMessages, 2000); // Refresh messages every 2 seconds
+            getMessages(); // Get messages on initial page load
+        });
+		
+		// Get the input element and the send button
+    var messageInput = document.getElementById("message-input");
+    var sendButton = document.getElementById("send-button");
+
+    // Add an event listener to the input element
+    messageInput.addEventListener("keydown", function(event) {
+        // Check if the Enter key is pressed (key code 13)
+        if (event.keyCode === 13) {
+            // Prevent the default behavior of the Enter key
+            event.preventDefault();
+            
+            // Trigger a click event on the send button
+            sendButton.click();
+        }
+    });
+	
+	function scrollMessagesContainerToBottom() {
+        var messagesContainer = document.getElementById("messages-container");
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+	
+	var deleteTexts = document.querySelectorAll('.delete-text');
+    deleteTexts.forEach(function(text) {
+        text.addEventListener('click', function(event) {
+            var message = event.target.closest('.message');
+            message.remove();
+        });
+    });
+    </script>
+</body>
+</html>
